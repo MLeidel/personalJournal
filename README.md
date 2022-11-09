@@ -13,5 +13,5 @@ Personal journal for desktop
 To use without remote centralized database
 just delete .pj_ftp.cfg file.
 
-pj.py is an example of how to write a desktop GUI app using Python and tkinter. It also shows how to use a handful of highly useful Python modules.
+pj.py is an example of how to write a desktop GUI app using Python and tkinter. It also shows how to use a handful of highly useful Python modules for this purpose.
 
