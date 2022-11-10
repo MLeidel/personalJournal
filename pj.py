@@ -11,6 +11,7 @@ import pysftp
 import configparser
 import os
 import subprocess
+from tkinter import messagebox
 from time import gmtime, strftime
 from tkinter.font import Font
 from tkinter import messagebox
@@ -78,6 +79,7 @@ class Application(Frame):
 
         root.bind("<<CalendarSelected>>", self.calselected)
         root.bind('<Control-s>', self.save_entry)
+        self.text_area.bind('<Alt-s>', self.spellcorrect)
         root.bind('<Control-q>', save_location)
         root.bind('<Escape>', exit)
         self.text_area.bind('<Control-t>', self.insert_time)
@@ -116,13 +118,7 @@ class Application(Frame):
     def save_entry(self):
         ''' save entry to database for this date '''
         date_key = self.cal.get_date()
-        etext = self.text_area.get("1.0", END)
-
-        # run through spell checker
-        #   and update Text widget
-        entry_text = self.spell(etext)
-        self.text_area.delete("1.0", END)
-        self.text_area.insert("1.0", entry_text)
+        entry_text = self.text_area.get("1.0", END)
 
         conn = sqlite3.connect('pjourn.db')
         sql = "SELECT entry FROM pj WHERE date_key = '" + date_key + "'"
@@ -164,6 +160,16 @@ class Application(Frame):
         time = strftime("%I:%M %p") + " "
         inx = self.text_area.index(INSERT)
         self.text_area.insert(inx, time)  # paste into
+
+    def spellcorrect(self, event):
+        if self.text_area.tag_ranges("sel"):
+            text = self.text_area.selection_get()
+            # run through spell checker
+            #   and update Text widget
+            entry_text = self.spell(text)
+            if entry_text != text:
+                messagebox.showinfo("Correction?",
+                                    "Perhaps you were thinking of:\n" + entry_text)
 
 
 # END Application Class
