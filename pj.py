@@ -85,6 +85,7 @@ class Application(Frame):
 
         self.text_area.edit_modified(False)
         self.calselected(None)
+        self.text_area.focus()
 
 
     def calselected(self, event=None):
