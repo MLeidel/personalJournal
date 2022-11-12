@@ -9,6 +9,7 @@ from tkinter import scrolledtext
 import sqlite3
 import pysftp
 import configparser
+import time
 import os
 import subprocess
 from tkinter import messagebox
@@ -29,6 +30,11 @@ class Application(Frame):
         if os.path.exists(".pj_ftp.cfg"):
             myftp_download(".pj_ftp.cfg")
 
+        config = configparser.RawConfigParser()
+        config.read(".pj.cfg")
+        self.fname = config.get('Main', 'fontname')
+        self.fsize = config.get('Main', 'fontsize')
+
         self.create_widgets()
         self.spell = Speller(lang='en')
 
@@ -36,7 +42,7 @@ class Application(Frame):
     def create_widgets(self):
         ''' creates GUI for app '''
 
-        myfont = Font(family='Lucida Console', weight='normal', size=11)
+        myfont = Font(family=self.fname, weight='normal', size=self.fsize)
         boldfont = Font(weight="bold", family='Arial')
         # expand widget to fill the grid
         self.columnconfigure(1, weight=1)
@@ -70,8 +76,8 @@ class Application(Frame):
         frm = Frame(self, height=50)
         frm.grid(row=3, column=1)
 
-        btn_save = Button(frm, text="Save", command=self.save_entry)
-        btn_save.grid(row=1, column=1, pady=5, padx=10)
+        self.btn_save = Button(frm, text="Save", command=self.save_entry)
+        self.btn_save.grid(row=1, column=1, pady=5, padx=10)
         btn_print = Button(frm, text="List", command=self.list_all)
         btn_print.grid(row=1, column=2, pady=5, padx=10)
         btn_close = Button(frm, text="Close", command=save_location)
@@ -115,8 +121,13 @@ class Application(Frame):
         self.text_area.edit_modified(False)
 
 
+    def saveoff(self):
+        ''' turn off "Saving.." text in Save button '''
+        self.btn_save.configure(text="Save")
+
     def save_entry(self):
         ''' save entry to database for this date '''
+        self.btn_save.configure(text="Saving..")
         date_key = self.cal.get_date()
         entry_text = self.text_area.get("1.0", END)
 
@@ -137,6 +148,8 @@ class Application(Frame):
         self.text_area.edit_modified(False)
         conn.commit()
         conn.close()
+        root.after(1500, self.saveoff)
+
 
     def list_all(self):
         date_key = self.cal.get_date()
