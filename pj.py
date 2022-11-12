@@ -32,8 +32,12 @@ class Application(Frame):
 
         config = configparser.RawConfigParser()
         config.read(".pj.cfg")
-        self.fname = config.get('Main', 'fontname')
-        self.fsize = config.get('Main', 'fontsize')
+        self.fname = config.get('Main', 'fontname')  # MUST be set in .pj.cfg file
+        self.fsize = config.get('Main', 'fontsize')  # MUST be set in .pj.cfg file
+        self.tedit = config.get('Main', 'editor')    # MUST be set in .pj.cfg file
+        self.mac1 = config.get('Main', 'mac1')       # MUST be set in .pj.cfg file
+        self.mac2 = config.get('Main', 'mac2')       # MUST be set in .pj.cfg file
+        self.mac3 = config.get('Main', 'mac3')       # MUST be set in .pj.cfg file
 
         self.create_widgets()
         self.spell = Speller(lang='en')
@@ -80,16 +84,18 @@ class Application(Frame):
         self.btn_save.grid(row=1, column=1, pady=5, padx=10)
         btn_print = Button(frm, text="List", command=self.list_all)
         btn_print.grid(row=1, column=2, pady=5, padx=10)
-        btn_close = Button(frm, text="Close", command=save_location)
+        btn_close = Button(frm, text="Close", command=self.exit_program)
         btn_close.grid(row=1, column=3, pady=5, padx=10)
 
         root.bind("<<CalendarSelected>>", self.calselected)
         root.bind('<Control-s>', self.save_entry)
         self.text_area.bind('<Alt-s>', self.spellcorrect)
-        root.bind('<Control-q>', save_location)
+        root.bind('<Control-q>', self.exit_program)
         root.bind('<Escape>', exit)
         self.text_area.bind('<Control-t>', self.insert_time)
-
+        self.text_area.bind('<Control-Key-1>', self.insert_macro)
+        self.text_area.bind('<Control-Key-2>', self.insert_macro)
+        self.text_area.bind('<Control-Key-3>', self.insert_macro)
 
         self.text_area.edit_modified(False)
         self.calselected(None)
@@ -152,6 +158,8 @@ class Application(Frame):
 
 
     def list_all(self):
+        ''' Creates a text file for the year, and
+        executes your text editor to display text. '''
         date_key = self.cal.get_date()
         year_key = date_key[:4]  # just the year
         conn = sqlite3.connect('pjourn.db')
@@ -167,22 +175,45 @@ class Application(Frame):
             fh.write(txt)
         fh.close()
         conn.close()
-        subprocess.Popen(['gedit', 'output.txt'])
+        subprocess.Popen([self.tedit, 'output.txt'])
 
     def insert_time(self, event):
+        ''' inserts 12 hour time at cursor '''
         time = strftime("%I:%M %p") + " "
         inx = self.text_area.index(INSERT)
-        self.text_area.insert(inx, time)  # paste into
+        self.text_area.insert(inx, time)
 
     def spellcorrect(self, event):
+        ''' This spell checker is not great;
+        so just display the suggested spelling, but
+        do not autocorrect the actual text '''
         if self.text_area.tag_ranges("sel"):
             text = self.text_area.selection_get()
-            # run through spell checker
-            #   and update Text widget
             entry_text = self.spell(text)
             if entry_text != text:
                 messagebox.showinfo("Correction?",
                                     "Perhaps you were thinking of:\n" + entry_text)
+
+    def insert_macro(self, event):
+        ''' macro text from .py.cfg file
+        user pressed Ctrl- 1, 2, or 3 '''
+        key = int(event.keysym)
+        inx = self.text_area.index(INSERT)
+        if key == 1:
+            self.text_area.insert(inx, self.mac1)
+        elif key == 2:
+            self.text_area.insert(inx, self.mac2)
+        else:
+            self.text_area.insert(inx, self.mac3)
+
+
+    def exit_program(self, e=None):
+        ''' user must save changes before quitting '''
+        if self.text_area.edit_modified():
+            messagebox.showwarning("Warning!", "Previous changes will be lost")
+            return
+        save_location()  # closes the application
+
 
 
 # END Application Class
@@ -190,9 +221,6 @@ class Application(Frame):
 # UNCOMMENT THE FOLLOWING TO SAVE GEOMETRY INFO
 def save_location(e=None):
     ''' executes at WM_DELETE_WINDOW event - see below '''
-    # ans = messagebox.askokcancel("Data Saved", "Ok to exit?")
-    # if ans is not True:
-    #     return
     with open("winfo", "w") as fout:
         fout.write(root.geometry())
     # if config file exists then backup to cloud

@@ -23,4 +23,11 @@ just delete .pj_ftp.cfg file.
 - Ctrl-t INSERT TIME HH:MM PM
 - Alt-s SPELL CHECK SELECTED TEXT
 - Escape QUIT No Save
+- Ctrl-1 macro 1
+- Ctrl-2 macro 2
+- Ctrl-3 macro 3
+
+Macros stored in .py.cfg
+
+
 
