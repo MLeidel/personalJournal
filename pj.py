@@ -89,13 +89,37 @@ class Application(Frame):
 
         root.bind("<<CalendarSelected>>", self.calselected)
         root.bind('<Control-s>', self.save_entry)
-        self.text_area.bind('<Alt-s>', self.spellcorrect)
         root.bind('<Control-q>', self.exit_program)
         root.bind('<Escape>', exit)
+        self.text_area.bind('<Alt-s>', self.spellcorrect)
         self.text_area.bind('<Control-t>', self.insert_time)
         self.text_area.bind('<Control-Key-1>', self.insert_macro)
         self.text_area.bind('<Control-Key-2>', self.insert_macro)
         self.text_area.bind('<Control-Key-3>', self.insert_macro)
+
+        # BEGIN MENU
+        menubar = Menu(root)
+        mn_file = Menu(menubar, tearoff=0)
+        mn_file.add_command(label="Save", command=self.nm_file_save, accelerator="Ctrl-s", underline=1)
+        mn_file.add_command(label="List Year", command=self.list_all)
+        mn_file.add_separator()
+        mn_file.add_command(label="Exit", command=self.nm_file_exit, accelerator="Ctrl-q")
+        menubar.add_cascade(label="File", menu=mn_file)
+        mn_edit = Menu(menubar, tearoff=0)
+        mn_edit.add_command(label="Undo", command=self.mn_edit_undo, accelerator="Ctrl-z")
+        mn_edit.add_command(label="Redo", command=self.mn_edit_redo, accelerator="Ctrl-y")
+        mn_edit.add_command(label="Select All", command=self.mn_edit_selall, accelerator="Ctrl-a")
+        submenu = Menu(mn_edit, tearoff=False)
+        submenu.add_command(label="Copy", command=self.mn_edit_copy, accelerator="Ctrl-c")
+        submenu.add_command(label="Paste", command=self.mn_edit_paste, accelerator="Ctrl-v")
+        mn_edit.add_cascade(label="Clipboard", menu=submenu, underline=2)
+        menubar.add_cascade(label="Edit", menu=mn_edit)
+        mn_help = Menu(menubar, tearoff=0)
+        mn_help.add_command(label="Help Index", command=self.mn_help_index)
+        mn_help.add_command(label="About…", command=self.mn_help_about)
+        menubar.add_cascade(label="Help", menu=mn_help)
+        root.config(menu=menubar) # display the menu
+        # END MENU
 
         self.text_area.edit_modified(False)
         self.calselected(None)
@@ -214,11 +238,54 @@ class Application(Frame):
             return
         save_location()  # closes the application
 
+    # MENU handlers
 
+    def nm_file_save(self):
+        ''' menu action '''
+        self.save_entry()
+
+    def nm_file_exit(self):
+        ''' menu action '''
+        self.exit_program()
+
+    def mn_edit_undo(self):
+        ''' menu action '''
+        self.text_area.edit_undo()
+
+    def mn_edit_redo(self):
+        ''' menu action '''
+        self.text_area.edit_redo()
+
+    def mn_edit_selall(self, e=None):
+        ''' menu action '''
+        self.text_area.tag_add(SEL, '1.0', END)
+        self.text_area.mark_set(INSERT, '1.0')
+        self.text_area.see(INSERT)
+
+    def mn_edit_copy(self):
+        ''' menu action '''
+        if self.text_area.tag_ranges("sel"):
+            text = self.text_area.selection_get()
+            root.clipboard_clear()  # clear clipboard contents
+            root.clipboard_append(text)  # append new value to clipbaord
+
+    def mn_edit_paste(self):
+        ''' menu action '''
+        text = root.clipboard_get()
+        inx = self.text_area.index(INSERT)
+        self.text_area.insert(inx, text)
+
+    def mn_help_index(self):
+        ''' menu action '''
+
+    def mn_help_about(self):
+        ''' menu action '''
+
+    # END MENU handlers
 
 # END Application Class
 
-# UNCOMMENT THE FOLLOWING TO SAVE GEOMETRY INFO
+
 def save_location(e=None):
     ''' executes at WM_DELETE_WINDOW event - see below '''
     with open("winfo", "w") as fout:
@@ -228,7 +295,6 @@ def save_location(e=None):
         myftp_upload(".pj_ftp.cfg")
 
     root.destroy()
-
 
 
 def myftp_upload(confile):
