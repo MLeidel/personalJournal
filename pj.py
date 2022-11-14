@@ -4,20 +4,20 @@ Personal Journal
 '''
 from tkinter import *
 from tkinter.ttk import *  # defaults all widgets as ttk
-from tkcalendar import *
 from tkinter import scrolledtext
 import sqlite3
-import pysftp
 import configparser
-import time
+from time import strftime
+# import time
 import os
 import subprocess
-from tkinter import messagebox
-from time import gmtime, strftime
+import webbrowser
 from tkinter.font import Font
 from tkinter import messagebox
 from autocorrect import Speller
+from tkcalendar import *
 from ttkthemes import ThemedTk  # ttkthemes is applied to all widgets
+import pysftp
 
 class Application(Frame):
     ''' main class docstring '''
@@ -113,6 +113,9 @@ class Application(Frame):
         submenu.add_command(label="Copy", command=self.mn_edit_copy, accelerator="Ctrl-c")
         submenu.add_command(label="Paste", command=self.mn_edit_paste, accelerator="Ctrl-v")
         mn_edit.add_cascade(label="Clipboard", menu=submenu, underline=2)
+        mn_edit.add_command(label="Macro 1", command=self.mn_edit_mac1, accelerator="Ctrl-1")
+        mn_edit.add_command(label="Macro 2", command=self.mn_edit_mac2, accelerator="Ctrl-2")
+        mn_edit.add_command(label="Macro 3", command=self.mn_edit_mac3, accelerator="Ctrl-3")
         menubar.add_cascade(label="Edit", menu=mn_edit)
         mn_help = Menu(menubar, tearoff=0)
         mn_help.add_command(label="Help Index", command=self.mn_help_index)
@@ -155,7 +158,7 @@ class Application(Frame):
         ''' turn off "Saving.." text in Save button '''
         self.btn_save.configure(text="Save")
 
-    def save_entry(self):
+    def save_entry(self, e=None):
         ''' save entry to database for this date '''
         self.btn_save.configure(text="Saving..")
         date_key = self.cal.get_date()
@@ -275,11 +278,26 @@ class Application(Frame):
         inx = self.text_area.index(INSERT)
         self.text_area.insert(inx, text)
 
+    def mn_edit_mac1(self):
+        ''' menu action '''
+        inx = self.text_area.index(INSERT)
+        self.text_area.insert(inx, self.mac1)
+    def mn_edit_mac2(self):
+        ''' menu action '''
+        inx = self.text_area.index(INSERT)
+        self.text_area.insert(inx, self.mac2)
+    def mn_edit_mac3(self):
+        ''' menu action '''
+        inx = self.text_area.index(INSERT)
+        self.text_area.insert(inx, self.mac3)
+
     def mn_help_index(self):
         ''' menu action '''
+        webbrowser.open("https://github.com/MLeidel/personalJournal/blob/main/README.md")
 
     def mn_help_about(self):
         ''' menu action '''
+        messagebox.showinfo("About", "Personal Journal\nBy M D Leidel")
 
     # END MENU handlers
 
