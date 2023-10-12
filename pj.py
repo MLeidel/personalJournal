@@ -6,10 +6,10 @@ from tkinter import *
 from tkinter.ttk import *  # defaults all widgets as ttk
 from tkinter import scrolledtext
 import sqlite3
-import configparser
+from configparser import ConfigParser
 from time import strftime
 # import time
-import os
+import os, sys
 import subprocess
 import webbrowser
 from tkinter.font import Font
@@ -30,7 +30,7 @@ class Application(Frame):
         if os.path.exists(".pj_ftp.cfg"):
             myftp_download(".pj_ftp.cfg")
 
-        config = configparser.RawConfigParser()
+        config = ConfigParser()
         config.read(".pj.cfg")
         self.fname = config.get('Main', 'fontname')  # MUST be set in .pj.cfg file
         self.fsize = config.get('Main', 'fontsize')  # MUST be set in .pj.cfg file
@@ -46,7 +46,7 @@ class Application(Frame):
     def create_widgets(self):
         ''' creates GUI for app '''
 
-        myfont = Font(family=self.fname, weight='normal', size=self.fsize)
+        self.myfont = Font(family=self.fname, weight='normal', size=self.fsize)
         boldfont = Font(weight="bold", family='Arial')
         # expand widget to fill the grid
         self.columnconfigure(1, weight=1)
@@ -70,11 +70,11 @@ class Application(Frame):
                                                    wrap=WORD,
                                                    width=40,
                                                    height=12,
-                                                   tabs=(myfont.measure(' ' * 4),),
+                                                   tabs=(self.myfont.measure(' ' * 4),),
                                                    undo=True,
                                                    padx=5,
                                                    pady=5,
-                                                   font=myfont)
+                                                   font=self.myfont)
         self.text_area.grid(row=2, column=1, sticky='nsew', pady=5, padx=5)
 
         frm = Frame(self, height=50)
@@ -116,6 +116,7 @@ class Application(Frame):
         mn_edit.add_command(label="Macro 1", command=self.mn_edit_mac1, accelerator="Ctrl-1")
         mn_edit.add_command(label="Macro 2", command=self.mn_edit_mac2, accelerator="Ctrl-2")
         mn_edit.add_command(label="Macro 3", command=self.mn_edit_mac3, accelerator="Ctrl-3")
+        mn_edit.add_command(label="Fonts", command=self.mn_edit_fonts)
         menubar.add_cascade(label="Edit", menu=mn_edit)
         mn_help = Menu(menubar, tearoff=0)
         mn_help.add_command(label="Help Index", command=self.mn_help_index)
@@ -291,6 +292,15 @@ class Application(Frame):
         inx = self.text_area.index(INSERT)
         self.text_area.insert(inx, self.mac3)
 
+    def mn_edit_fonts(self):
+        command = ['python3', 'fontchooser.py']
+        subprocess.call(command) # wait for exit
+        config = ConfigParser()
+        config.read(".pj.cfg")
+        self.fname = config.get('Main', 'fontname')  # MUST be set in .pj.cfg file
+        self.fsize = config.get('Main', 'fontsize')  # MUST be set in .pj.cfg file
+        self.myfont.config(family=self.fname, size=self.fsize)
+
     def mn_help_index(self):
         ''' menu action '''
         webbrowser.open("https://github.com/MLeidel/personalJournal/blob/main/README.md")
@@ -317,7 +327,7 @@ def save_location(e=None):
 
 def myftp_upload(confile):
     ''' option for saving database to cloud '''
-    config = configparser.RawConfigParser()
+    config = ConfigParser()
     config.read(confile)
     cnopts = pysftp.CnOpts()
     cnopts.hostkeys = None
@@ -333,7 +343,7 @@ def myftp_upload(confile):
 
 def myftp_download(confile):
     ''' option for saving database to cloud '''
-    config = configparser.RawConfigParser()
+    config = ConfigParser()
     config.read(confile)
     cnopts = pysftp.CnOpts()
     cnopts.hostkeys = None
