@@ -19,7 +19,8 @@ just delete .pj_ftp.cfg file.
 - font name 
 - font size 
 - text editor (for listings) 
-- macro 1-3 strings 
+- macro 1-3 strings
+ 
 __NOTE:__ Under the 'Edit' menu choose 'Font'
 to graphically choose font and size.
 
