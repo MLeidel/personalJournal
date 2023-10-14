@@ -15,7 +15,13 @@ It also shows how to use a handful of highly useful Python modules for this purp
 To use without remote centralized database
 just delete .pj_ftp.cfg file.
 
-.pj.cfg contains some app settings
+.pj.cfg contains some app settings:
+- font name
+- font size
+- text editor (for listings)
+- macro 1-3 strings
+__NOTE:__ Under the 'Edit' menu choose 'Font'
+to graphically choose font and size.
 
 ## Hotkeys:
 - Ctrl-s SAVE
